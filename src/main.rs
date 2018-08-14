@@ -33,7 +33,15 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
                 let re = Regex::new(r"^running (?P<UnitTestCount>\d*) tests$").unwrap();
                 match re.is_match(&l) {
                     false => {}
-                    true => set_state(&mut state, States::ParsingUnitTests),
+                    true => {
+                        let caps = re.captures(&l).unwrap(); // Assume unwrap() is safe since regex matched
+                        println!(
+                            "There are {} unit-tests",
+                            (&caps["UnitTestCount"]).parse::<i64>().unwrap()
+                        );
+
+                        set_state(&mut state, States::ParsingUnitTests);
+                    }
                 }
             }
             _ => println!("{}", l),
