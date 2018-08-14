@@ -29,6 +29,13 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
     for line in reader.lines() {
         let l = line.unwrap();
         match state {
+            States::ScanningForUnitTests => {
+                let re = Regex::new(r"running (\d*) tests").unwrap();
+                match re.is_match(&l) {
+                    false => {}
+                    true => set_state(&mut state, States::ParsingUnitTests),
+                }
+            }
             _ => println!("{}", l),
         }
     }
