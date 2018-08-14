@@ -30,7 +30,7 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
         let l = line.unwrap();
         match state {
             States::ScanningForUnitTests => {
-                let re = Regex::new(r"running (\d*) tests").unwrap();
+                let re = Regex::new(r"^running (\d*) tests$").unwrap();
                 match re.is_match(&l) {
                     false => {}
                     true => set_state(&mut state, States::ParsingUnitTests),
