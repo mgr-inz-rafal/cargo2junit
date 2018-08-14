@@ -1,0 +1,6 @@
+[package]
+name = "cargo2junit"
+version = "0.1.0"
+authors = ["mgr_inz_rafal <rchabowski@gmail.com>"]
+
+[dependencies]
