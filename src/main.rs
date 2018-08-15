@@ -6,6 +6,24 @@ use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
 
+#[derive(Clone)]
+struct TestCase {
+    name: String,
+    ok: bool,
+    failmessage: String,
+}
+
+#[derive(Clone, Default)]
+struct TestSuite {
+    name: String,
+    test_cases: Vec<TestCase>,
+}
+
+#[derive(Default)]
+struct Test {
+    test_suites: Vec<TestSuite>,
+}
+
 #[derive(Debug)]
 enum States {
     Undefined,
@@ -33,6 +51,15 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
     let file = try!(File::open("./test_data/test_01.input"));
     let reader = BufReader::new(&file);
     set_state(&mut state, States::ScanningForUnitTests);
+
+    let mut test = Test {
+        ..Default::default()
+    };
+
+    let mut current_test_suite = TestSuite {
+        name: "Unit-Tests".to_string(),
+        ..Default::default()
+    };
 
     for line in reader.lines() {
         let l = line.unwrap();
@@ -74,9 +101,15 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
                                 println!("Finished parsing {}-tests", get_name_from_state(&state));
                                 match state {
                                     States::ParsingUnitTests => {
+                                        test.test_suites.push(current_test_suite.clone());
+                                        current_test_suite = TestSuite {
+                                            name: "Doc-Tests".to_string(),
+                                            ..Default::default()
+                                        };
                                         set_state(&mut state, States::ScanningForDocTests)
                                     }
                                     States::ParsingDocTests => {
+                                        test.test_suites.push(current_test_suite.clone());
                                         set_state(&mut state, States::Finished)
                                     }
                                     _ => {}
@@ -86,13 +119,24 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
                     }
                     true => {
                         let caps = re.captures(&l).unwrap(); // Assume unwrap() is safe since regex matched
-                        println!("Found test: {}", &caps["UnitTestName"]);
+                        let name = String::from(&caps["UnitTestName"]);
+                        let ok = true;
+                        let failmessage = "Dupa".to_string();
+                        println!("Found test: {}", name);
+
+                        let new_test = TestCase {
+                            name,
+                            ok,
+                            failmessage,
+                        };
+                        current_test_suite.test_cases.push(new_test);
                     }
                 }
             }
             _ => {}
         }
     }
+
     Ok(())
 }
 
