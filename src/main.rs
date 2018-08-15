@@ -143,8 +143,15 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
     println!("<testsuites>");
     let mut suite_id = 0;
     for suite in test.test_suites {
+        let mut failures = 0;
+        for case in &suite.test_cases {
+            if case.ok == false {
+                failures += 1;
+            }
+        }
         println!(
-            "\t<testsuite errors=\"0\" failures=\"1\" id=\"{}\" name=\"{}\" tests=\"{}\">",
+            "\t<testsuite errors=\"0\" failures=\"{}\" id=\"{}\" name=\"{}\" tests=\"{}\">",
+            failures,
             suite_id,
             suite.name,
             suite.test_cases.len()
