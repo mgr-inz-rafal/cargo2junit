@@ -61,8 +61,10 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```xml
 <?xml version="1.0" ?>
 <testsuites>
-    <testsuite errors="0" failures="0" id="0" name="my test suite" tests="1">
+    <testsuite errors="0" failures="1" id="0" name="my test suite" tests="2">
         <testcase classname="some.class.name" name="Test1" time="123.345000"/>
+        <testcase classname="some.class.name" name="Test2" time="678.123000"/>
+            <failure message="test failure">Assertion failed</failure>
     </testsuite>
 </testsuites>
 ```
