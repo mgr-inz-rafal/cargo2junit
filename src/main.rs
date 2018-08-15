@@ -44,6 +44,19 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
                     }
                 }
             }
+            States::ParsingUnitTests => {
+                let re = Regex::new(r"^test (?P<UnitTestName>.+) ... ok$").unwrap();
+                match re.is_match(&l) {
+                    false => {
+                        println!("Finished parsing unit-tests");
+                        set_state(&mut state, States::ScanningForDocTests);
+                    }
+                    true => {
+                        let caps = re.captures(&l).unwrap(); // Assume unwrap() is safe since regex matched
+                        println!("Found test: {}", &caps["UnitTestName"]);
+                    }
+                }
+            }
             _ => println!("{}", l),
         }
     }
