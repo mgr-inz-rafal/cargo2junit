@@ -1,0 +1,48 @@
+
+running 3 tests
+test tests::it_works ... ok
+test tests::it_doesnt_work ... FAILED
+test tests::simple_fail ... FAILED
+
+failures:
+
+---- tests::it_doesnt_work stdout ----
+thread 'tests::it_doesnt_work' panicked at 'assertion failed: `(left == right)`
+  left: `4`,
+ right: `5`', src/lib.rs:18:9
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+
+---- tests::simple_fail stdout ----
+thread 'tests::simple_fail' panicked at 'Make this test fail', src/lib.rs:23:9
+
+
+failures:
+    tests::it_doesnt_work
+    tests::simple_fail
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out
+
+
+running 2 tests
+test src/lib.rs -  (line 4) ... FAILED
+test src/lib.rs -  (line 1) ... ok
+
+failures:
+
+---- src/lib.rs -  (line 4) stdout ----
+thread 'src/lib.rs -  (line 4)' panicked at 'test executable failed:
+
+thread 'main' panicked at 'assertion failed: `(left == right)`
+  left: `5`,
+ right: `4`', src/lib.rs:3:1
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+
+', librustdoc/test.rs:368:17
+note: Run with `RUST_BACKTRACE=1` for a backtrace.
+
+
+failures:
+    src/lib.rs -  (line 4)
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+
