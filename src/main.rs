@@ -90,8 +90,7 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
             }
             States::ParsingUnitTests | States::ParsingDocTests => {
                 let re =
-                    Regex::new(r"^test (?P<UnitTestName>.+) ... (?P<UnitTestResult>ok|FAILED)$")
-                        .unwrap();
+                    Regex::new(r"^test (?P<TestName>.+) ... (?P<TestResult>ok|FAILED)$").unwrap();
                 match re.is_match(&l) {
                     false => {
                         let re = Regex::new(r"^test result: .+$").unwrap();
@@ -119,9 +118,10 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
                     }
                     true => {
                         let caps = re.captures(&l).unwrap(); // Assume unwrap() is safe since regex matched
-                        let name = String::from(&caps["UnitTestName"]);
-                        let ok = true;
-                        let failmessage = "Dupa".to_string();
+                        let name = String::from(&caps["TestName"]);
+                        let state = String::from(&caps["TestResult"]);
+                        let ok = if state == "ok" { true } else { false };
+                        let failmessage = "Unsupported".to_string();
                         println!("Found test: {}", name);
 
                         let new_test = TestCase {
@@ -136,6 +136,33 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
             _ => {}
         }
     }
+
+    // Output XML
+    println!();
+    println!("<?xml version=\"1.0\" ?>");
+    println!("<testsuites>");
+    let mut suite_id = 0;
+    for suite in test.test_suites {
+        println!(
+            "\t<testsuite errors=\"0\" failures=\"1\" id=\"{}\" name=\"{}\" tests=\"{}\">",
+            suite_id,
+            suite.name,
+            suite.test_cases.len()
+        );
+        for case in suite.test_cases {
+            println!("\t\t<testcase name=\"{}\"/>", case.name);
+            if case.ok == false {
+                println!(
+                    "\t\t\t<failure message=\"{}\">Assertion failed</failure>",
+                    case.failmessage
+                );
+            }
+        }
+        println!("\t</testsuite>");
+        suite_id += 1;
+    }
+    println!("</testsuites>");
+    println!();
 
     Ok(())
 }
