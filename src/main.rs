@@ -1,10 +1,12 @@
 extern crate regex;
 
 use regex::Regex;
+use std::env;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::io::Write;
 
 #[derive(Clone)]
 struct TestCase {
@@ -47,8 +49,17 @@ fn get_name_from_state(state: &States) -> &'static str {
     }
 }
 
-fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
-    let file = try!(File::open("./test_data/test_01.input"));
+fn parse_input(
+    mut state: &mut States,
+    input_file: &str,
+    output_file: &str,
+) -> Result<(), io::Error> {
+    print!("Opening input file '{}'...", input_file);
+    let file = try!(File::open(input_file));
+    println!("DONE");
+    print!("Opening output file '{}'...", output_file);
+    let mut file_result = try!(File::create(output_file));
+    println!("DONE");
     let reader = BufReader::new(&file);
     set_state(&mut state, States::ScanningForUnitTests);
 
@@ -138,13 +149,14 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
     }
 
     // Output XML
-    println!();
-    println!("<?xml version=\"1.0\" ?>");
-    println!("<testsuites>");
+    print!("Writing output file...");
+    writeln!(file_result, "<?xml version=\"1.0\" ?>");
+    writeln!(file_result, "<testsuites>");
     let mut suite_id = 0;
     for suite in test.test_suites {
         let failures = suite.test_cases.iter().filter(|&n| n.ok == false).count();
-        println!(
+        writeln!(
+            file_result,
             "\t<testsuite errors=\"0\" failures=\"{}\" id=\"{}\" name=\"{}\" tests=\"{}\">",
             failures,
             suite_id,
@@ -152,28 +164,40 @@ fn parse_input(mut state: &mut States) -> Result<(), io::Error> {
             suite.test_cases.len()
         );
         for case in suite.test_cases {
-            println!("\t\t<testcase name=\"{}\"/>", case.name);
+            writeln!(file_result, "\t\t<testcase name=\"{}\"/>", case.name);
             if case.ok == false {
-                println!(
+                writeln!(
+                    file_result,
                     "\t\t\t<failure message=\"{}\">Assertion failed</failure>",
                     case.failmessage
                 );
             }
         }
-        println!("\t</testsuite>");
+        writeln!(file_result, "\t</testsuite>");
         suite_id += 1;
     }
-    println!("</testsuites>");
-    println!();
+    writeln!(file_result, "</testsuites>");
+    println!("DONE!");
 
     Ok(())
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 3 {
+        println!("Incorrect number of arguments.");
+        println!("Usage:");
+        println!("\t cargo2junit input_file output_file");
+        std::process::exit(-1);
+    }
+
     let mut state = States::Undefined;
-    let x = parse_input(&mut state);
+    let x = parse_input(&mut state, &args[1], &args[2]);
     match x {
-        Err(c) => println!("Parsing error: {}", c),
+        Err(c) => {
+            println!("Parsing error: {}", c);
+            std::process::exit(-2);
+        }
         Ok(_) => println!("Parsing OK"),
     }
 }
